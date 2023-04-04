@@ -10,7 +10,14 @@ const Home = () => {
   const [showModal, setShowModal] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
   const [data, setData] = useState([]);
-  const [productObj, setProductObj] = useState({});
+
+  const [productName, setProductName] = useState('');
+  const [details, setDetails] = useState('');
+  const [price, setPrice] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [createdDate, setCreatedDate] = useState('');
+  const [editId, setEditId] = useState('');
+
   const [productErrorObj, setProductErrorObj] = useState({});
   const [productIdToDelete, setProductIdToDelete] = useState(0);
   const [isModalEditable, setIsModalEditable] = useState(false);
@@ -18,6 +25,14 @@ const Home = () => {
   useEffect(() => {
     setData(JSON.parse(localStorage.getItem('product_data')) || []);
   }, []);
+
+  const clearProductData = () => {
+    setProductName('');
+    setPrice('');
+    setDetails('');
+    setCreatedDate('');
+    setQuantity('');
+  };
 
   const onChangeImage = (path) => {
     console.log(path);
@@ -34,8 +49,14 @@ const Home = () => {
   const onClickEdit = (id) => {
     setIsModalEditable(true);
     setShowModal(true);
+    setEditId(id);
     const productData = data.filter((product) => product.id === id);
-    setProductObj(productData[0]);
+    const product = productData[0];
+    setProductName(product.productName);
+    setPrice(product.price);
+    setDetails(product.details);
+    setCreatedDate(product.createdDate);
+    setQuantity(product.quantity);
   };
 
   const onClickShowPrompt = (id) => {
@@ -51,30 +72,36 @@ const Home = () => {
   };
 
   const onClickSave = () => {
-    if (Object.keys(productObj).includes('id')) {
+    if (isModalEditable && editId) {
       const productData = JSON.parse(localStorage.getItem('product_data')) || [];
       const updatedProductData = productData.map((product) => {
-        if (product.id === productObj.id) {
-          return { ...product, ...productObj };
+        if (product.id === editId) {
+          return {
+            id: editId, productName, details, price, quantity, createdDate,
+          };
         }
         return product;
       });
       localStorage.setItem('product_data', JSON.stringify(updatedProductData));
       setData(updatedProductData);
+      setEditId('');
     } else {
-      const obj = { id: nanoid(), ...productObj };
+      const obj = {
+        id: nanoid(), productName, details, price, quantity, createdDate,
+      };
       const productData = JSON.parse(localStorage.getItem('product_data')) || [];
       productData.push(obj);
       localStorage.setItem('product_data', JSON.stringify(productData));
       setData(productData);
     }
     setShowModal(false);
-    setProductObj({});
+    clearProductData();
   };
 
   const onClickCancel = () => {
     setShowModal(false);
-    setProductObj({});
+    clearProductData();
+    setEditId('');
   };
 
   return (
@@ -83,7 +110,7 @@ const Home = () => {
         type="button"
         onClick={() => {
           setShowModal(true);
-          setProductObj({});
+          clearProductData();
           setIsModalEditable(false);
         }}
       >
@@ -105,7 +132,7 @@ const Home = () => {
             <input
               type="file"
               id="image"
-              value={productObj.image}
+              // value="image"
               onChange={(e) => onChangeImage(e.target.value)}
               required
             />
@@ -118,10 +145,8 @@ const Home = () => {
             <input
               type="text"
               id="productName"
-              value={productObj.productName}
-              onChange={(e) => {
-                setProductObj((oldObj) => ({ ...oldObj, productName: e.target.value }));
-              }}
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
               required
             />
           </InputBox>
@@ -133,14 +158,12 @@ const Home = () => {
             <textarea
               type="text"
               id="details"
-              value={productObj.details}
-              onChange={(e) => {
-                setProductObj((oldObj) => ({ ...oldObj, details: e.target.value }));
-              }}
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
               rows="3"
               required
             >
-              {productObj.details}
+              {details}
             </textarea>
           </InputBox>
           <InputBox
@@ -151,10 +174,8 @@ const Home = () => {
             <input
               type="text"
               id="price"
-              value={productObj.price}
-              onChange={(e) => {
-                setProductObj((oldObj) => ({ ...oldObj, price: e.target.value }));
-              }}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
               required
             />
           </InputBox>
@@ -167,10 +188,8 @@ const Home = () => {
               type="number"
               min={0}
               id="quantity"
-              value={productObj.quantity}
-              onChange={(e) => {
-                setProductObj((oldObj) => ({ ...oldObj, quantity: e.target.value }));
-              }}
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
               required
             />
           </InputBox>
@@ -182,7 +201,7 @@ const Home = () => {
               type="text"
               id="totalPrice"
               disabled
-              value={productObj.price * productObj.quantity || 0}
+              value={price * quantity || 0}
               required
             />
           </InputBox>
@@ -194,10 +213,8 @@ const Home = () => {
             <input
               type="date"
               id="createdDate"
-              value={productObj.createdDate}
-              onChange={(e) => {
-                setProductObj((oldObj) => ({ ...oldObj, createdDate: e.target.value }));
-              }}
+              value={createdDate}
+              onChange={(e) => setCreatedDate(e.target.value)}
               required
             />
           </InputBox>
