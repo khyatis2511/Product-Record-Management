@@ -1,7 +1,7 @@
+import Home from '../ViewController/Home';
+
 const App = () => (
-  <div>
-    <h1>HELLO WORLD</h1>
-  </div>
+  <Home />
 );
 
 export default App;
